@@ -21,6 +21,11 @@ const numberToClientId = {}; // Mapping nomor bot ke clientId
 
 app.use(cookieParser());
 
+// Pastikan folder session ada
+if (!fs.existsSync(SESSION_DIR)) {
+    fs.mkdirSync(SESSION_DIR, { recursive: true });
+}
+
 // --- Persistence Functions ---
 function getBotsConfig() {
     if (!fs.existsSync(BOTS_CONFIG_PATH)) return {};
@@ -118,6 +123,8 @@ function createBot(clientId, config = {}) {
         console.error(`[${clientId}] Initialization error:`, err);
         bots[clientId].status = `Error: Init Failed`;
         updateBotList();
+        // Kirim error ke frontend jika ada socket
+        io.emit('bot_error', { clientId, error: err.message || String(err) });
     });
 
     updateBotList();
@@ -162,9 +169,14 @@ io.on('connection', (socket) => {
     socket.on('addBot', ({ clientId }) => {
         if (!clientId.match(/^[a-zA-Z0-9 _-]+$/)) return;
         if (bots[clientId]) return;
-        createBot(clientId);
-        saveBotsConfig();
-        updateUserBotList();
+        try {
+            createBot(clientId);
+            saveBotsConfig();
+            updateUserBotList();
+        } catch (err) {
+            console.error(`[${clientId}] Error creating bot:`, err);
+            socket.emit('bot_error', { clientId, error: err.message || String(err) });
+        }
     });
 
     socket.on('deleteBot', ({ clientId }) => {
