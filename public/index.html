@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BotWA Manager</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #075e54;
+            --secondary-color: #128c7e;
+            --light-green: #25d366;
+            --background-color: #f0f2f5;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --text-light: #555;
+            --border-color: #e0e0e0;
+            --status-ready: #25d366;
+            --status-qr: #ff9800;
+            --status-disconnected: #f44336;
+            --accent: #e8f5e9;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            background: linear-gradient(135deg, #e8f5e9 0%, #f0f2f5 100%);
+            color: var(--text-color);
+        }
+        header {
+            background: linear-gradient(90deg, var(--primary-color) 60%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 1.25rem 1.5rem 1.25rem;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border-bottom-left-radius: 32px;
+            border-bottom-right-radius: 32px;
+        }
+        header h1 {
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+            margin-bottom: 0.2em;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+        .card {
+            background: var(--card-background);
+            border-radius: 18px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.09);
+            margin-bottom: 2.5rem;
+            padding: 2.2rem 2rem 2rem 2rem;
+            border: 1.5px solid var(--accent);
+        }
+        .bot-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(390px, 1fr));
+            gap: 2.2rem;
+        }
+        .bot-item {
+            border: 1.5px solid var(--border-color);
+            border-radius: 16px;
+            padding: 1.7rem 1.2rem 1.2rem 1.2rem;
+            display: flex;
+            flex-direction: column;
+            background: #f9fafb;
+            transition: box-shadow 0.3s, border 0.3s;
+        }
+        .bot-item:hover {
+            box-shadow: 0 8px 24px rgba(0,0,0,0.13);
+            border: 1.5px solid var(--primary-color);
+        }
+        .bot-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1.5px solid var(--border-color);
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+        }
+        .bot-header h3 { margin: 0; color: var(--primary-color); font-size: 1.45rem; }
+        .bot-avatar {
+            width: 48px; height: 48px; border-radius: 50%; object-fit: cover;
+            border: 2.5px solid var(--primary-color); background: #fff;
+            box-shadow: 0 2px 8px rgba(7,94,84,0.08);
+        }
+        .bot-status { font-weight: 700; padding: 0.3rem 1.1rem; border-radius: 14px; font-size: 1rem; letter-spacing: 1px;}
+        .bot-status.ready { background-color: var(--status-ready); color: white; }
+        .bot-status.disconnected { background-color: var(--status-disconnected); color: white; }
+        .bot-status.qr, .bot-status.initializing { background-color: var(--status-qr); color: white; }
+        
+        .bot-details p { margin: 0.5rem 0; color: var(--text-light); font-size: 1.05em;}
+        .bot-details p strong { color: var(--text-color); }
+
+        .qr-code { margin: 1rem auto; min-height: 266px; display: flex; justify-content: center; align-items: center; }
+        .qr-code img { border: 6px solid var(--primary-color); border-radius: 8px; }
+
+        .actions { margin-top: 1.5rem; display: flex; gap: 1rem; }
+        .actions button {
+            flex-grow: 1; padding: 0.85rem; border: none; border-radius: 10px;
+            cursor: pointer; font-weight: 700; transition: all 0.18s;
+            display: flex; justify-content: center; align-items: center; gap: 0.5rem;
+            font-size: 1.05em;
+        }
+        .reconnect-btn { background-color: var(--secondary-color); color: white; }
+        .reconnect-btn:hover { background-color: #0e7164; transform: translateY(-2px) scale(1.04);}
+        .delete-btn { background-color: var(--status-disconnected); color: white; }
+        .delete-btn:hover { background-color: #d32f2f; transform: translateY(-2px) scale(1.04);}
+
+        .config-section { margin-top: 1.5rem; border-top: 1.5px solid var(--border-color); padding-top: 1.5rem; }
+        .config-section h4 { margin-top: 0; margin-bottom: 1rem; color: var(--secondary-color);}
+        
+        .owner-list { list-style: none; padding: 0; margin-bottom: 1rem; }
+        .owner-list li {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 0.6rem 0.8rem; border-radius: 8px; background-color: #e8f5e9;
+            margin-bottom: 0.5rem; font-size: 1.05em;
+            border: 1px solid #d0e8db;
+        }
+        .remove-owner-btn { background: none; border: none; color: #aaa; cursor: pointer; font-size: 1.2rem; }
+        .remove-owner-btn:hover { color: var(--status-disconnected); }
+
+        .add-owner-form { display: flex; gap: 0.5rem; }
+        .add-owner-form input { flex-grow: 1; padding: 0.6rem; border: 1px solid var(--border-color); border-radius: 8px; }
+        .add-owner-form button { background-color: var(--light-green); color: white; border: none; padding: 0 1rem; border-radius: 8px; cursor: pointer; font-weight: 600;}
+        .add-owner-form button:hover { background-color: #1ebd5b; }
+
+        .toggle-switch { display: flex; justify-content: space-between; align-items: center; margin-top: 1rem; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
+        .slider:before { position: absolute; content: ""; height: 16px; width: 16px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: var(--light-green); }
+        input:checked + .slider:before { transform: translateX(26px); }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>BotWA Manager</h1>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <h2><i class="fas fa-plus-circle"></i> Add New Bot</h2>
+            <div id="add-bot-form" style="display: flex; gap: 0.5rem;">
+                <input type="text" id="bot-id" placeholder="Enter a unique Bot ID (e.g., bot_jualan)" style="flex-grow: 1; padding: 0.75rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                <button onclick="addBot()" style="background-color: var(--secondary-color); color: white; padding: 0.75rem 1.5rem; border: none; border-radius: 8px; cursor: pointer; font-weight: 600;">Add Bot</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2><i class="fas fa-robot"></i> Managed Bots</h2>
+            <div id="bot-list" class="bot-list"></div>
+        </div>
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+        const botList = document.getElementById('bot-list');
+
+        function addBot() {
+            const botIdInput = document.getElementById('bot-id');
+            const botId = botIdInput.value.trim();
+            if (botId && botId.match(/^[a-zA-Z0-9_-]+$/)) {
+                socket.emit('addBot', { clientId: botId });
+                botIdInput.value = '';
+            } else {
+                alert('Please enter a valid Bot ID.');
+            }
+        }
+
+        socket.on('updateBotList', (bots) => {
+            const existingCards = new Set(Array.from(botList.children).map(c => c.id.replace('bot-', '')));
+            const newBots = new Set(Object.keys(bots));
+            
+            existingCards.forEach(id => {
+                if (!newBots.has(id)) document.getElementById(`bot-${id}`)?.remove();
+            });
+
+            for (const clientId in bots) {
+                createOrUpdateBotCard(clientId, bots[clientId]);
+            }
+        });
+
+        socket.on('qr_image', (data) => {
+            const botItem = document.getElementById(`bot-${data.clientId}`);
+            if (botItem) {
+                botItem.querySelector('.qr-code').innerHTML = `<img src="${data.src}" alt="QR Code">`;
+                updateStatus(botItem, 'QR Code Ready');
+            }
+        });
+
+        function createOrUpdateBotCard(clientId, botData) {
+            let botItem = document.getElementById(`bot-${clientId}`);
+            if (!botItem) {
+                botItem = document.createElement('div');
+                botItem.className = 'bot-item';
+                botItem.id = `bot-${clientId}`;
+                botList.appendChild(botItem);
+                botItem.innerHTML = `
+                    <div class="bot-header">
+                        <div style="display:flex;align-items:center;gap:0.75rem;">
+                            <img class="bot-avatar" src="" alt="Avatar" style="width:40px;height:40px;border-radius:50%;object-fit:cover;display:none;">
+                            <h3>${clientId}</h3>
+                        </div>
+                        <span class="bot-status">Loading...</span>
+                    </div>
+                    <div class="bot-details">
+                        <p><strong>Name:</strong> <span class="bot-name">N/A</span></p>
+                        <p><strong>Number:</strong> <span class="bot-number">N/A</span></p>
+                        <p><strong>Chats:</strong> <span class="bot-chats">N/A</span></p>
+                    </div>
+                    <div class="qr-code"></div>
+                    <div class="actions">
+                        <button class="reconnect-btn" onclick="reconnectBot('${clientId}')"><i class="fas fa-sync-alt"></i> Reconnect</button>
+                        <!-- Tombol Delete dihapus/disable di public -->
+                        <!--<button class="delete-btn" onclick="deleteBot('${clientId}')"><i class="fas fa-trash"></i> Delete</button>-->
+                    </div>
+                    <div class="config-section">
+                        <h4><i class="fas fa-user-shield"></i> Owners</h4>
+                        <ul class="owner-list"></ul>
+                        <div class="add-owner-form">
+                            <input type="text" id="owner-input-${clientId}" placeholder="Enter owner number">
+                            <button onclick="addOwner('${clientId}')">Add</button>
+                        </div>
+                        <div class="toggle-switch">
+                            <span>Respond to Own Messages</span>
+                            <label class="switch">
+                                <input type="checkbox" class="from-me-toggle" onchange="toggleFromMe('${clientId}', this.checked)">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Set avatar jika ada
+            const avatar = botItem.querySelector('.bot-avatar');
+            if (botData.profilePicUrl) {
+                avatar.src = botData.profilePicUrl;
+                avatar.style.display = 'block';
+            } else {
+                avatar.src = '';
+                avatar.style.display = 'none';
+            }
+
+            botItem.querySelector('.bot-name').textContent = botData.name || 'N/A';
+            botItem.querySelector('.bot-number').textContent = botData.number || 'N/A';
+            botItem.querySelector('.bot-chats').textContent = botData.chatCount || 'N/A';
+            botItem.querySelector('.from-me-toggle').checked = botData.fromMeEnabled;
+            
+            const ownersHTML = (botData.owners || []).map(owner => `
+                <li><span>${owner}</span><button class="remove-owner-btn" onclick="removeOwner('${clientId}', '${owner}')">&times;</button></li>
+            `).join('');
+            botItem.querySelector('.owner-list').innerHTML = ownersHTML;
+
+            updateStatus(botItem, botData.status);
+        }
+
+        function updateStatus(botItem, status) {
+            const statusEl = botItem.querySelector('.bot-status');
+            statusEl.textContent = status;
+            statusEl.className = 'bot-status';
+            if (status === 'Ready') {
+                statusEl.classList.add('ready');
+                botItem.querySelector('.qr-code').innerHTML = '';
+            } else if (status === 'QR Code Ready') {
+                statusEl.classList.add('qr');
+            } else if (status === 'Disconnected' || status.startsWith('Error')) {
+                statusEl.classList.add('disconnected');
+            } else {
+                statusEl.classList.add('initializing');
+            }
+        }
+
+        function reconnectBot(clientId) { if (confirm(`Reconnect ${clientId}?`)) socket.emit('reconnectBot', { clientId }); }
+        function deleteBot(clientId) { if (confirm(`Delete ${clientId}?`)) socket.emit('deleteBot', { clientId }); }
+        function addOwner(clientId) {
+            const input = document.getElementById(`owner-input-${clientId}`);
+            if (input.value.trim()) {
+                // Kirim hanya angka ke backend
+                const clean = input.value.trim().replace(/\D/g, '');
+                if (clean.length > 5) { // minimal 6 digit biar valid
+                    socket.emit('addOwner', { clientId, ownerNumber: clean });
+                }
+                input.value = '';
+            }
+        }
+        function removeOwner(clientId, ownerNumber) { socket.emit('removeOwner', { clientId, ownerNumber }); }
+        function toggleFromMe(clientId, isEnabled) { socket.emit('toggleFromMe', { clientId, isEnabled }); }
+    </script>
+    
+    </body>
+
+
+</html>

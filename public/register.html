@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Register - BotWA</title>
+    <style>
+        body { font-family: Inter,sans-serif; background: #e8f5e9; display: flex; align-items: center; justify-content: center; height: 100vh;}
+        .box { background: #fff; padding: 2.5rem 2rem; border-radius: 16px; box-shadow: 0 6px 24px rgba(0,0,0,0.09); width: 350px;}
+        h2 { margin-top: 0; color: #128c7e;}
+        input,button { width: 100%; margin-bottom: 1rem; padding: 0.7rem; border-radius: 8px; border: 1px solid #e0e0e0;}
+        button { background: #128c7e; color: #fff; font-weight: 600; border: none;}
+        button:hover { background: #075e54;}
+        .link { text-align: center; }
+    </style>
+</head>
+<body>
+    <form class="box" method="POST" onsubmit="return register(event)">
+        <h2>Register BotWA</h2>
+        <input type="text" id="username" placeholder="Username" required autocomplete="username">
+        <input type="password" id="password" placeholder="Password" required autocomplete="new-password">
+        <button type="submit">Register</button>
+        <div class="link">Sudah punya akun? <a href="/login">Login</a></div>
+        <div id="msg" style="color:red;text-align:center;"></div>
+    </form>
+    <script>
+        async function register(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const res = await fetch('/api/register', {
+                method: 'POST',
+                headers: {'Content-Type':'application/json'},
+                body: JSON.stringify({ username, password })
+            });
+            const data = await res.json();
+            if (data.success) { location.href = '/login'; }
+            else document.getElementById('msg').innerText = data.error || 'Register gagal';
+        }
+    </script>
+</body>
+</html>
